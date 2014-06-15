@@ -21,7 +21,7 @@
 
         <activity android:name="pl.edu.agh.servicetracker.NFCRequestActivity"
                   android:label="@string/new_request"
-                  android:noHistory="true" >
+                  android:noHistory="true">
             <intent-filter>
                 <action android:name="android.nfc.action.NDEF_DISCOVERED"/>
                 <category android:name="android.intent.category.DEFAULT"/>
@@ -30,6 +30,13 @@
                       android:pathPrefix="/store/apps/details?id=com.nxp.nfc.tagwriter"/>
             </intent-filter>
         </activity>
+
+        <activity android:name="pl.edu.agh.servicetracker.NewRequestActivity"
+                  android:label="@string/new_request"></activity>
+
+        <activity android:name="pl.edu.agh.servicetracker.RequestListActivity"
+                  android:label="@string/my_requests"></activity>
+
     </application>
 
 </manifest>
