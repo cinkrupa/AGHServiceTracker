@@ -16,6 +16,8 @@ public class ServiceRequest {
 
     private RequestStatus status;
 
+    private String response;
+
     public ServiceRequest(Long id, Item item, String description, Date dateCreated, Date lastModified, RequestStatus status) {
         this.id = id;
         this.item = item;
@@ -23,6 +25,12 @@ public class ServiceRequest {
         this.dateCreated = dateCreated;
         this.lastModified = lastModified;
         this.status = status;
+    }
+
+    public ServiceRequest(Long id, Item item, String description, Date dateCreated, Date lastModified,
+                          RequestStatus status, String response) {
+        this(id, item, description, dateCreated, lastModified, status);
+        this.response = response;
     }
 
     public Long getId() {
@@ -48,4 +56,9 @@ public class ServiceRequest {
     public RequestStatus getStatus() {
         return status;
     }
+
+    public String getResponse() { return response; }
+
+    @Override
+    public String toString() { return "#"+id; }
 }

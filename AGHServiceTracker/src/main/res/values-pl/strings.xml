@@ -15,5 +15,10 @@
     <string name="validator_empty">Pole nie może być puste</string>
     <string name="validator_not_email">Niepoprawny adres email</string>
     <string name="validator_too_short">Minimalna długość pola: %1$d</string>
+    <string name="item">Przedmiot</string>
+    <string name="status">Status</string>
+    <string name="response">Odpowiedź</string>
+    <string name="date_created">Data utworzenia</string>
+    <string name="last_modified">Data ostatniej modyfikacji</string>
 
 </resources>

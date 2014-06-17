@@ -28,4 +28,7 @@ public class Item {
     public String getLocation() {
         return location;
     }
+
+    @Override
+    public String toString() { return name; }
 }

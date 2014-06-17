@@ -2,14 +2,19 @@ package pl.edu.agh.servicetracker;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.nfc.NdefMessage;
+import android.nfc.NdefRecord;
+import android.nfc.NfcAdapter;
 import android.os.Bundle;
+import android.os.Parcelable;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
+import pl.edu.agh.servicetracker.request.Item;
 import pl.edu.agh.servicetracker.request.MockRequestService;
 
 
@@ -70,7 +75,7 @@ public class MainActivity extends Activity {
         myRequestsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, RequestListActivity.class));
+                startActivity(new Intent(MainActivity.this, ServiceRequestListActivity.class));
             }
         });
 
@@ -80,11 +85,14 @@ public class MainActivity extends Activity {
         IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
         if (scanResult != null) {
             // handle scan result
-            Intent newRequestIntent = new Intent(MainActivity.this, NewRequestActivity.class);
-            intent.putExtra(ITEM_ID, MockRequestService.MOCK_ID);
-            startActivity(newRequestIntent);
-
+            try {
+                long itemId = Long.parseLong(scanResult.getContents().split(" ")[1].split(":")[1]);
+                Intent newRequestIntent = new Intent(MainActivity.this, NewRequestActivity.class);
+                newRequestIntent.putExtra(ITEM_ID, itemId);
+                startActivity(newRequestIntent);
+            } catch(NullPointerException | ArrayIndexOutOfBoundsException | NumberFormatException e) {
+                Log.d("SCAN_RESULT", "INVALID FORMAT");
+            }
         }
     }
-
 }

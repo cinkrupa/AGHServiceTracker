@@ -60,4 +60,8 @@ public class Form {
         }
         croutons.clear();
     }
+
+    public void onDestroy() {
+        Crouton.clearCroutonsForActivity(activity);
+    }
 }

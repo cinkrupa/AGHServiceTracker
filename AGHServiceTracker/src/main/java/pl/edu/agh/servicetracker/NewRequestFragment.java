@@ -1,16 +1,23 @@
 package pl.edu.agh.servicetracker;
 
 import android.app.Fragment;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 import de.keyboardsurfer.android.widget.crouton.Crouton;
 import pl.edu.agh.servicetracker.request.Item;
 import pl.edu.agh.servicetracker.request.MockRequestService;
 import pl.edu.agh.servicetracker.validation.Form;
+import pl.edu.agh.servicetracker.validation.FormUtils;
 import pl.edu.agh.servicetracker.validation.validator.MinimumLengthValidator;
 import pl.edu.agh.servicetracker.validation.validator.NonEmptyValidator;
 
@@ -29,39 +36,62 @@ public class NewRequestFragment extends Fragment {
     private Form form;
 
     @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        super.onCreateView(inflater, container, savedInstanceState);
+        View rootView = inflater.inflate(R.layout.fragment_request, container, false);
+        initFields(rootView);
+        return rootView;
+    }
+
+    @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        initFields();
+        initValidationForm();
 
         sendRequestButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (form.isValid()) {
-                    MockRequestService.sendRequest(new Item(null, name.getText().toString(),
-                                    category.getText().toString(), location.getText().toString()),
-                            description.getText().toString()
-                    );
-                    Toast.makeText(getActivity(), R.string.request_sent, Toast.LENGTH_SHORT);
-                    startActivity(new Intent(getActivity(), MainActivity.class));
-                }
+                validateAndSubmit();
             }
         });
     }
 
     @Override
     public void onDestroy() {
-        Crouton.clearCroutonsForActivity(getActivity());
+        form.onDestroy();
+        super.onDestroy();
+
     }
 
-    private void initFields() {
-        name = (EditText) getActivity().findViewById(R.id.name);
-        category = (EditText) getActivity().findViewById(R.id.category);
-        location = (EditText) getActivity().findViewById(R.id.location);
-        description = (EditText) getActivity().findViewById(R.id.description);
-        sendRequestButton = (Button) getActivity().findViewById(R.id.sendRequestButton);
-        initValidationForm();
+    public void setFieldValues(Item item) {
+        name.setText(item.getName());
+        category.setText(item.getCategory());
+        location.setText(item.getLocation());
+        name.setEnabled(false);
+        category.setEnabled(false);
+        location.setEnabled(false);
+        description.requestFocus();
+        description.selectAll();
+        FormUtils.showKeyboard(getActivity(), description);
+    }
 
+    private void validateAndSubmit() {
+        if (form.isValid()) {
+            MockRequestService.sendRequest(buildItem(),
+                    description.getText().toString()
+            );
+            startActivity(new Intent(getActivity(), MainActivity.class));
+        }
+    }
+
+    private void initFields(View rootView) {
+        name = (EditText) rootView.findViewById(R.id.name);
+        category = (EditText) rootView.findViewById(R.id.category);
+        location = (EditText) rootView.findViewById(R.id.location);
+        description = (EditText) rootView.findViewById(R.id.description);
+        sendRequestButton = (Button) rootView.findViewById(R.id.sendRequestButton);
     }
 
     private void initValidationForm() {
@@ -72,5 +102,8 @@ public class NewRequestFragment extends Fragment {
         form.field(description).validator(new NonEmptyValidator()).validator(new MinimumLengthValidator(20));
     }
 
-
+    private Item buildItem() {
+        return new Item(null, name.getText().toString(),
+                category.getText().toString(), location.getText().toString());
+    }
 }
