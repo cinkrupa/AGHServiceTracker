@@ -17,7 +17,6 @@
   -->
 
 <resources>
-
     <string name="app_name">AGH Service Tracker</string>
     <string name="action_settings">Settings</string>
     <string name="new_request">New request</string>
@@ -41,5 +40,4 @@
     <string name="response">Response</string>
     <string name="date_created">Date created</string>
     <string name="last_modified">Last modified</string>
-
 </resources>
