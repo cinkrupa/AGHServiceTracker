@@ -33,8 +33,6 @@
     <string name="validator_too_short">Minimalna długość pola: %1$d</string>
     <string name="title_servicerequest_list">Moje zgłoszenia</string>
     <string name="title_servicerequest_detail">Dane zgłoszenia</string>
-    <string name="item_id">item_id</string>
-    <string name="ndef_mime_type">application/pl.edu.agh.servicetracker</string>
     <string name="item">Przedmiot</string>
     <string name="status">Status</string>
     <string name="response">Odpowiedź</string>

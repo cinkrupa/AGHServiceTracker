@@ -33,8 +33,8 @@
     <string name="validator_too_short">Minimum field length is %1$d characters</string>
     <string name="title_servicerequest_list">My Service Requests</string>
     <string name="title_servicerequest_detail">Service Request details</string>
-    <string name="item_id">item_id</string>
-    <string name="ndef_mime_type">application/pl.edu.agh.servicetracker</string>
+    <string name="item_id" translatable="false">item_id</string>
+    <string name="ndef_mime_type" translatable="false">application/pl.edu.agh.servicetracker</string>
     <string name="item">Item</string>
     <string name="status">Status</string>
     <string name="response">Response</string>
