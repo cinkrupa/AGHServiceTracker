@@ -18,30 +18,39 @@
 package pl.edu.agh.servicetracker;
 
 import android.app.Activity;
-import android.app.ListFragment;
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-
+import pl.edu.agh.servicetracker.auth.AuthPreferencesUtil;
+import pl.edu.agh.servicetracker.auth.UserCredentials;
+import pl.edu.agh.servicetracker.auth.UserNotInitializedException;
+import pl.edu.agh.servicetracker.request.InvalidTokenException;
 import pl.edu.agh.servicetracker.request.MockRequestService;
 import pl.edu.agh.servicetracker.request.ServiceRequest;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * A list fragment representing a list of ServiceRequests. This fragment
  * also supports tablet devices by allowing list items to be given an
  * 'activated' state upon selection. This helps indicate which item is
  * currently being viewed in a {@link ServiceRequestDetailFragment}.
- * <p>
+ * <p/>
  * Activities containing this fragment MUST implement the {@link Callbacks}
  * interface.
  */
-public class ServiceRequestListFragment extends ListFragment {
+public class ServiceRequestListFragment extends SwipeRefreshListFragment {
 
-    private List<ServiceRequest> serviceRequests = new ArrayList<ServiceRequest>();
+    private ArrayAdapter<ServiceRequest> listAdapter;
+
+    private ArrayList serviceRequests = new ArrayList<ServiceRequest>();
+
+    private UserCredentials userCredentials;
 
     /**
      * The serialization (saved instance state) Bundle key representing the
@@ -92,15 +101,24 @@ public class ServiceRequestListFragment extends ListFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        try {
+            userCredentials = AuthPreferencesUtil.getUserCredentials(getActivity());
+        } catch (UserNotInitializedException e) {
+            startActivity(new Intent(getActivity(), SendTokenActivity.class));
+        }
+        listAdapter = new ArrayAdapter<ServiceRequest>(getActivity(), android.R.layout.simple_list_item_activated_1,
+                android.R.id.text1, serviceRequests);
+        setListAdapter(listAdapter);
+    }
 
-        serviceRequests.clear();
-        serviceRequests.addAll(MockRequestService.getRequestsByUser(""));
-
-        // TODO: replace with a real list adapter.
-        setListAdapter(new ArrayAdapter<ServiceRequest>(
-                getActivity(),
-                android.R.layout.simple_list_item_activated_1,
-                android.R.id.text1, serviceRequests));
+    private void reloadData() {
+        listAdapter.clear();
+        try {
+            listAdapter.addAll(MockRequestService.getRequestsByUser(userCredentials));
+        } catch (InvalidTokenException e) {
+            startActivity(new Intent(getActivity(), SendTokenActivity.class));
+        }
+        listAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -108,10 +126,62 @@ public class ServiceRequestListFragment extends ListFragment {
         super.onViewCreated(view, savedInstanceState);
 
         // Restore the previously serialized activated item position.
-        if (savedInstanceState != null
-                && savedInstanceState.containsKey(STATE_ACTIVATED_POSITION)) {
+        if (savedInstanceState != null && savedInstanceState.containsKey(STATE_ACTIVATED_POSITION)) {
             setActivatedPosition(savedInstanceState.getInt(STATE_ACTIVATED_POSITION));
         }
+        setColorScheme(R.color.agh_green, R.color.agh_red, R.color.blue, R.color.orange);
+        setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                new AsyncTask<Void, Void, Boolean>() {
+                    @Override
+                    protected Boolean doInBackground(Void... params) {
+                        serviceRequests.clear();
+                        try {
+                            serviceRequests.addAll(MockRequestService.getRequestsByUser(userCredentials));
+                        } catch (InvalidTokenException e) {
+                            return false;
+                        }
+                        return true;
+                    }
+
+                    @Override
+                    protected void onPostExecute(Boolean success) {
+                        if(success) {
+                            listAdapter.notifyDataSetChanged();
+                            setRefreshing(false);
+                        } else {
+                            startActivity(new Intent(getActivity(), SendTokenActivity.class));
+                        }
+                    }
+                }.execute();
+            }
+        });
+        final ProgressDialog progressDialog = ProgressDialog.show(getActivity(), "", getString(R.string
+                .loading));
+        new AsyncTask<Void, Void, Boolean>() {
+            @Override
+            protected Boolean doInBackground(Void... params) {
+                serviceRequests.clear();
+                try {
+                    serviceRequests.addAll(MockRequestService.getRequestsByUser(userCredentials));
+                } catch (InvalidTokenException e) {
+                    return false;
+                }
+                return true;
+            }
+
+            @Override
+            protected void onPostExecute(Boolean success) {
+                progressDialog.dismiss();
+                if(success) {
+                    listAdapter.notifyDataSetChanged();
+                    setRefreshing(false);
+                } else {
+                    startActivity(new Intent(getActivity(), SendTokenActivity.class));
+                }
+            }
+        }.execute();
     }
 
     @Override
@@ -140,7 +210,7 @@ public class ServiceRequestListFragment extends ListFragment {
 
         // Notify the active callbacks interface (the activity, if the
         // fragment is attached to one) that an item has been selected.
-        mCallbacks.onItemSelected(serviceRequests.get(position).getId());
+        mCallbacks.onItemSelected(listAdapter.getItem(position).getId());
     }
 
     @Override
@@ -159,9 +229,7 @@ public class ServiceRequestListFragment extends ListFragment {
     public void setActivateOnItemClick(boolean activateOnItemClick) {
         // When setting CHOICE_MODE_SINGLE, ListView will automatically
         // give items the 'activated' state when touched.
-        getListView().setChoiceMode(activateOnItemClick
-                ? ListView.CHOICE_MODE_SINGLE
-                : ListView.CHOICE_MODE_NONE);
+        getListView().setChoiceMode(activateOnItemClick ? ListView.CHOICE_MODE_SINGLE : ListView.CHOICE_MODE_NONE);
     }
 
     private void setActivatedPosition(int position) {

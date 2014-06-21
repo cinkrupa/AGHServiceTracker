@@ -14,9 +14,9 @@
   ~
   ~ You should have received a copy of the GNU Affero General Public License
   ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
-  -->
-
+-->
 <resources>
+
     <string name="app_name">AGH Service Tracker</string>
     <string name="action_settings">Settings</string>
     <string name="new_request">New request</string>
@@ -30,6 +30,7 @@
     <string name="my_requests">My requests</string>
     <string name="validator_empty">Field cannot be empty</string>
     <string name="validator_not_email">Not a valid email address</string>
+    <string name="validator_not_agh_email">Email address not from agh.edu.pl domain</string>
     <string name="validator_too_short">Minimum field length is %1$d characters</string>
     <string name="title_servicerequest_list">My Service Requests</string>
     <string name="title_servicerequest_detail">Service Request details</string>
@@ -40,4 +41,19 @@
     <string name="response">Response</string>
     <string name="date_created">Date created</string>
     <string name="last_modified">Last modified</string>
+    <string name="loading">Loading...</string>
+    <string name="sending">Sending...</string>
+    <string name="opening_text">This is your first time using our application or your authentication token has
+        been invalidated.</string>
+    <string name="provide_agh_address">Please provide a valid email address in the agh.edu.pl domain.</string>
+    <string name="send_token">Send token</string>
+    <string name="title_activity_send_token">Welcome</string>
+    <string name="your_email_address">Your email address</string>
+    <string name="title_activity_provide_token">Authentication</string>
+    <string name="provide_token_text">Please provide the authentication token sent to you via email</string>
+    <string name="authenticate">Authenticate</string>
+    <string name="resend_token">Resend token</string>
+    <string name="change_email">Change email</string>
+    <string name="invalid_token">Invalid token</string>
+    <string name="invalidate_token">Invalidate token</string>
 </resources>

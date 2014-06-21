@@ -14,8 +14,7 @@
   ~
   ~ You should have received a copy of the GNU Affero General Public License
   ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
-  -->
-
+-->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="pl.edu.agh.servicetracker" >
 
@@ -40,19 +39,17 @@
             android:label="@string/new_request"
             android:noHistory="true" >
             <intent-filter>
-                <action android:name="android.nfc.action.NDEF_DISCOVERED"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-                <data android:mimeType="@string/ndef_mime_type"/>
+                <action android:name="android.nfc.action.NDEF_DISCOVERED" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:mimeType="@string/ndef_mime_type" />
             </intent-filter>
         </activity>
         <activity
             android:name="pl.edu.agh.servicetracker.NewRequestActivity"
-            android:label="@string/new_request" />
-        <activity
-            android:name="pl.edu.agh.servicetracker.LoginActivity"
-            android:label="@string/title_activity_login"
-            android:windowSoftInputMode="adjustResize|stateVisible" >
-        </activity>
+            android:label="@string/new_request"
+            android:noHistory="true" />
         <activity
             android:name="pl.edu.agh.servicetracker.ServiceRequestListActivity"
             android:label="@string/title_servicerequest_list" >
@@ -65,11 +62,16 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="pl.edu.agh.servicetracker.ServiceRequestListActivity" />
         </activity>
+        <activity
+            android:name="pl.edu.agh.servicetracker.SendTokenActivity"
+            android:label="@string/title_activity_send_token"
+            android:noHistory="true">
+        </activity>
+        <activity
+            android:name="pl.edu.agh.servicetracker.ProvideTokenActivity"
+            android:label="@string/title_activity_provide_token"
+            android:noHistory="true">
+        </activity>
     </application>
-
-    <!-- To auto-complete the email text field in the login form with the user's emails -->
-    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
-    <uses-permission android:name="android.permission.READ_PROFILE" />
-    <uses-permission android:name="android.permission.READ_CONTACTS" />
 
 </manifest>

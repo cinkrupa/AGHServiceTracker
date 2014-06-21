@@ -39,6 +39,15 @@ public class Form {
         this.activity = activity;
     }
 
+    public static Crouton showErrorMessage(Activity activity, EditText textView, String message) {
+        textView.requestFocus();
+        textView.selectAll();
+        FormUtils.showKeyboard(activity, textView);
+        Crouton crouton = Crouton.makeText(activity, message, Style.ALERT);
+        crouton.show();
+        return crouton;
+    }
+
     public Field field(EditText textView) {
         Field field = new Field(textView, activity);
         fields.add(field);
@@ -62,13 +71,7 @@ public class Form {
     }
 
     public void showErrorMessage(ValidationResult result) {
-        EditText textView = result.getTextView();
-        textView.requestFocus();
-        textView.selectAll();
-        FormUtils.showKeyboard(activity, textView);
-        Crouton crouton = Crouton.makeText(activity, result.getMessage(), Style.ALERT);
-        croutons.add(crouton);
-        crouton.show();
+        croutons.add(showErrorMessage(activity, result.getTextView(), result.getMessage()));
     }
 
     public void clearErrorMessages() {

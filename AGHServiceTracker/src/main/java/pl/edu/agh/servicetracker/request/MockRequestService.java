@@ -17,13 +17,12 @@
 
 package pl.edu.agh.servicetracker.request;
 
-import java.util.ArrayList;
+import pl.edu.agh.servicetracker.auth.UserCredentials;
+
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -56,13 +55,52 @@ public class MockRequestService {
 
     }
 
-    public static Collection<ServiceRequest> getRequestsByUser(String username) {
+    public static Collection<ServiceRequest> getRequestsByUser(UserCredentials userCredentials) throws InvalidTokenException {
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return SERVICE_REQUESTS_MAP.values();
     }
 
-    public static void sendRequest(Item item, String description) {
+    public static void sendRequest(UserCredentials userCredentials, Item item,
+                                   String description) throws InvalidTokenException {
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         long id = 2500L + RANDOM.nextInt(500);
         SERVICE_REQUESTS_MAP.put(id, new ServiceRequest(id, item, description, new Date(), new Date(), RequestStatus.NEW));
 
+    }
+
+    public static boolean sendTokenRequest(String email) {
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return true;
+    }
+
+    public static boolean isTokenValid(UserCredentials userCredentials) {
+        String email = userCredentials.getEmail();
+        String token = userCredentials.getToken();
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return true;
+    }
+
+    public static void invalidateToken(UserCredentials userCredentials) {
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }

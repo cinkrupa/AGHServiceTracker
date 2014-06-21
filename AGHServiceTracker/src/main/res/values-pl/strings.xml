@@ -30,6 +30,7 @@
     <string name="my_requests">Moje zgłoszenia</string>
     <string name="validator_empty">Pole nie może być puste</string>
     <string name="validator_not_email">Niepoprawny adres email</string>
+    <string name="validator_not_agh_email">Adres email spoza domeny agh.edu.pl</string>
     <string name="validator_too_short">Minimalna długość pola: %1$d</string>
     <string name="title_servicerequest_list">Moje zgłoszenia</string>
     <string name="title_servicerequest_detail">Dane zgłoszenia</string>
@@ -38,4 +39,20 @@
     <string name="response">Odpowiedź</string>
     <string name="date_created">Data utworzenia</string>
     <string name="last_modified">Data ostatniej modyfikacji</string>
+    <string name="loading">Wczytywanie...</string>
+    <string name="sending">Wysyłanie...</string>
+    <string name="opening_text">To Twoje pierwsze uruchomienie aplikacji lub Twoje dane uwierzytelniające
+        zostały unieważnione
+    </string>
+    <string name="provide_agh_address">Podaj adres email w domenie agh.edu.pl.</string>
+    <string name="send_token">Wyślij token</string>
+    <string name="title_activity_send_token">Witaj</string>
+    <string name="your_email_address">Twój adres email</string>
+    <string name="title_activity_provide_token">Uwierzytelnienie</string>
+    <string name="provide_token_text">Podaj token uwierzytelniający wysłany do Ciebie w wiadomości email</string>
+    <string name="authenticate">Uwierzytelnij</string>
+    <string name="resend_token">Wyślij token ponownie</string>
+    <string name="change_email">Zmień adres email</string>
+    <string name="invalid_token">Niepoprawny token</string>
+    <string name="invalidate_token">Unieważnij token</string>
 </resources>

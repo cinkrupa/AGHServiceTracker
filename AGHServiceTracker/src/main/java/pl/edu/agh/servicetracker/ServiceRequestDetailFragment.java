@@ -42,9 +42,6 @@ public class ServiceRequestDetailFragment extends Fragment {
      */
     public static final String ARG_ITEM_ID = "item_id";
 
-    /**
-     * The dummy content this fragment is presenting.
-     */
     private ServiceRequest serviceRequest;
 
     TextView requestName;
@@ -62,13 +59,6 @@ public class ServiceRequestDetailFragment extends Fragment {
     TextView requestResponseLabel;
 
     TextView requestResponse;
-
-    /**
-     * Mandatory empty constructor for the fragment manager to instantiate the
-     * fragment (e.g. upon screen orientation changes).
-     */
-    public ServiceRequestDetailFragment() {
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -116,7 +106,7 @@ public class ServiceRequestDetailFragment extends Fragment {
         requestLastUpdated.setText(DateFormat.getInstance().format(serviceRequest.getLastModified()));
         requestStatus.setText(serviceRequest.getStatus().name());
         if (serviceRequest.getStatus() == RequestStatus.RESOLVED) {
-            requestResponse.setText(serviceRequest.getDescription());
+            requestResponse.setText(serviceRequest.getResponse());
         } else {
             requestResponse.setVisibility(View.GONE);
             requestResponseLabel.setVisibility(View.GONE);

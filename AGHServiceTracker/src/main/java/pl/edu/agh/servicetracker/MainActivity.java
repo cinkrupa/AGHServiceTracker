@@ -18,12 +18,10 @@
 package pl.edu.agh.servicetracker;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
-import android.nfc.NdefMessage;
-import android.nfc.NdefRecord;
-import android.nfc.NfcAdapter;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -31,7 +29,9 @@ import android.view.View;
 import android.widget.Button;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
-import pl.edu.agh.servicetracker.request.Item;
+import pl.edu.agh.servicetracker.auth.AuthPreferencesUtil;
+import pl.edu.agh.servicetracker.auth.UserCredentials;
+import pl.edu.agh.servicetracker.auth.UserNotInitializedException;
 import pl.edu.agh.servicetracker.request.MockRequestService;
 
 
@@ -45,17 +45,36 @@ public class MainActivity extends Activity {
 
     private Button myRequestsButton;
 
+    private UserCredentials userCredentials;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        initFields();
+
+        try {
+            userCredentials = AuthPreferencesUtil.getUserCredentials(this);
+            if (MockRequestService.isTokenValid(userCredentials)) {
+                setContentView(R.layout.activity_main);
+                initFields();
+            } else {
+                startActivity(new Intent(MainActivity.this, SendTokenActivity.class));
+            }
+
+        } catch (UserNotInitializedException e) {
+            if (AuthPreferencesUtil.isTokenSent(this)) {
+                startActivity(new Intent(MainActivity.this, ProvideTokenActivity.class));
+            } else {
+                startActivity(new Intent(MainActivity.this, SendTokenActivity.class));
+            }
+        }
+
+
     }
 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        
+
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
@@ -67,7 +86,23 @@ public class MainActivity extends Activity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        if (id == R.id.action_settings) {
+        if (id == R.id.invalidate_token) {
+            final ProgressDialog progressDialog = ProgressDialog.show(this, "", getString(R.string
+                    .loading));
+            new AsyncTask<Void, Void, Void>() {
+                @Override
+                protected Void doInBackground(Void... params) {
+                    MockRequestService.invalidateToken(userCredentials);
+                    AuthPreferencesUtil.clear(MainActivity.this);
+                    return null;
+                }
+
+                @Override
+                protected void onPostExecute(Void result) {
+                    progressDialog.dismiss();
+                    startActivity(new Intent(MainActivity.this, SendTokenActivity.class));
+                }
+            }.execute();
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -107,7 +142,7 @@ public class MainActivity extends Activity {
                 Intent newRequestIntent = new Intent(MainActivity.this, NewRequestActivity.class);
                 newRequestIntent.putExtra(ITEM_ID, itemId);
                 startActivity(newRequestIntent);
-            } catch(NullPointerException | ArrayIndexOutOfBoundsException | NumberFormatException e) {
+            } catch (NullPointerException | ArrayIndexOutOfBoundsException | NumberFormatException e) {
                 Log.d("SCAN_RESULT", "INVALID FORMAT");
             }
         }

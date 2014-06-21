@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <!--
   ~ Copyright (C) 2014  Marcin Krupa
   ~
@@ -15,12 +16,11 @@
   ~ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   -->
 
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:context="pl.edu.agh.servicetracker.MainActivity" >
-    
-    <item android:id="@+id/invalidate_token"
-        android:title="@string/invalidate_token"
-        android:orderInCategory="100"
-        android:showAsAction="never" />
-</menu>
+<resources>
+    <item name="blue" type="color">#FF3377FF</item>
+    <item name="orange" type="color">#FFFFBB33</item>
+    <item name="agh_red" type="color">#FFA71930</item>
+    <item name="agh_green" type="color">#FF00693C</item>
+    <item name="agh_black" type="color">#FF1E1E1E</item>
+    <item name="white" type="color">#FFFFFFFF</item>
+</resources>

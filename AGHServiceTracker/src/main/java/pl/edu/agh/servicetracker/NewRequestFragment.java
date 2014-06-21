@@ -18,19 +18,19 @@
 package pl.edu.agh.servicetracker;
 
 import android.app.Fragment;
-import android.content.Context;
+import android.app.ProgressDialog;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
-import android.widget.Toast;
-import de.keyboardsurfer.android.widget.crouton.Crouton;
+import pl.edu.agh.servicetracker.auth.AuthPreferencesUtil;
+import pl.edu.agh.servicetracker.auth.UserCredentials;
+import pl.edu.agh.servicetracker.auth.UserNotInitializedException;
+import pl.edu.agh.servicetracker.request.InvalidTokenException;
 import pl.edu.agh.servicetracker.request.Item;
 import pl.edu.agh.servicetracker.request.MockRequestService;
 import pl.edu.agh.servicetracker.validation.Form;
@@ -52,9 +52,10 @@ public class NewRequestFragment extends Fragment {
 
     private Form form;
 
+    private UserCredentials userCredentials;
+
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
         View rootView = inflater.inflate(R.layout.fragment_request, container, false);
         initFields(rootView);
@@ -66,6 +67,12 @@ public class NewRequestFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
 
         initValidationForm();
+
+        try {
+            userCredentials = AuthPreferencesUtil.getUserCredentials(getActivity());
+        } catch (UserNotInitializedException e) {
+            startActivity(new Intent(getActivity(), SendTokenActivity.class));
+        }
 
         sendRequestButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -96,10 +103,30 @@ public class NewRequestFragment extends Fragment {
 
     private void validateAndSubmit() {
         if (form.isValid()) {
-            MockRequestService.sendRequest(buildItem(),
-                    description.getText().toString()
-            );
-            startActivity(new Intent(getActivity(), MainActivity.class));
+            final ProgressDialog progressDialog = ProgressDialog.show(getActivity(), "", getString(R.string.sending));
+
+            new AsyncTask<Void, Void, Boolean>() {
+                @Override
+                protected Boolean doInBackground(Void... params) {
+                    try {
+                        MockRequestService.sendRequest(userCredentials, buildItem(),
+                                description.getText().toString());
+                    } catch (InvalidTokenException e) {
+                        return false;
+                    }
+                    return true;
+                }
+
+                @Override
+                protected void onPostExecute(Boolean success) {
+                    progressDialog.dismiss();
+                    if(success) {
+                        startActivity(new Intent(getActivity(), MainActivity.class));
+                    } else {
+                        startActivity(new Intent(getActivity(), SendTokenActivity.class));
+                    }
+                }
+            }.execute();
         }
     }
 
@@ -120,7 +147,6 @@ public class NewRequestFragment extends Fragment {
     }
 
     private Item buildItem() {
-        return new Item(null, name.getText().toString(),
-                category.getText().toString(), location.getText().toString());
+        return new Item(null, name.getText().toString(), category.getText().toString(), location.getText().toString());
     }
 }
