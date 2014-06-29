@@ -57,4 +57,6 @@
     <string name="invalid_token">Invalid token</string>
     <string name="invalidate_token">Invalidate token</string>
     <string name="connection_error">Connection error</string>
+    <string name="other">Other</string>
+    <string name="checking_token_validity">Checking token validity...</string>
 </resources>

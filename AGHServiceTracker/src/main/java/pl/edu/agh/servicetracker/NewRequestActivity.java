@@ -40,7 +40,7 @@ public class NewRequestActivity extends Activity {
 
     private void processIntent(Intent intent) {
         long itemId = intent.getLongExtra(MainActivity.ITEM_ID, -1);
-        if(itemId != -1) {
+        if (itemId != -1) {
             RequestService.getItemById(this, itemId, new UiCallback<Item>() {
 
                 @Override
@@ -49,9 +49,9 @@ public class NewRequestActivity extends Activity {
                 }
 
                 @Override
-                public void onError() {
-                    Crouton.makeText(NewRequestActivity.this, NewRequestActivity.this.getString(R.string
-                            .connection_error), Style.ALERT).show();
+                public void onError(String message) {
+                    Crouton.makeText(NewRequestActivity.this, String.format("%s: %s",
+                            NewRequestActivity.this.getString(R.string.connection_error), message), Style.ALERT).show();
                 }
             });
         }

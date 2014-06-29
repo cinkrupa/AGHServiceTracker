@@ -44,8 +44,6 @@ public class ServiceRequestDetailFragment extends Fragment {
 
     private ServiceRequest serviceRequest;
 
-    TextView requestName;
-
     TextView requestItem;
 
     TextView requestDescription;
@@ -82,7 +80,6 @@ public class ServiceRequestDetailFragment extends Fragment {
 
 
     private void initFields(View rootView) {
-        requestName = (TextView) rootView.findViewById(R.id.servicerequest_name);
         requestItem = (TextView) rootView.findViewById(R.id.servicerequest_item);
         requestDescription = (TextView) rootView.findViewById(R.id.servicerequest_description);
         requestDateCreated = (TextView) rootView.findViewById(R.id.servicerequest_date_created);
@@ -93,7 +90,6 @@ public class ServiceRequestDetailFragment extends Fragment {
     }
 
     private void setFieldValues(ServiceRequest serviceRequest) {
-        requestName.setText(serviceRequest.toString());
         requestItem.setText(serviceRequest.getItem().toString());
         requestDescription.setText(serviceRequest.getDescription());
         requestDateCreated.setText(DateFormat.getInstance().format(serviceRequest.getDateCreated()));

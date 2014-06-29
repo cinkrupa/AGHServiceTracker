@@ -98,7 +98,7 @@ public class ProvideTokenActivity extends Activity {
             if (email == null) {
                 changeEmail();
             }
-            final ProgressDialog progressDialog = ProgressDialog.show(this, "", getString(R.string.loading));
+            final ProgressDialog progressDialog = ProgressDialog.show(this, "", getString(R.string.checking_token_validity));
             final String tokenValue = token.getText().toString();
 
             AuthService.isTokenValid(this, tokenValue, new UiCallback<Boolean>() {
@@ -115,10 +115,10 @@ public class ProvideTokenActivity extends Activity {
                 }
 
                 @Override
-                public void onError() {
+                public void onError(String message) {
                     progressDialog.dismiss();
-                    errorMessage = Crouton.makeText(ProvideTokenActivity.this, ProvideTokenActivity.this.getString(R
-                            .string.connection_error), Style.ALERT);
+                    errorMessage = Crouton.makeText(ProvideTokenActivity.this, String.format("%s: %s",
+                            ProvideTokenActivity.this.getString(R.string.connection_error), message), Style.ALERT);
                     errorMessage.show();
                 }
             });
@@ -145,10 +145,10 @@ public class ProvideTokenActivity extends Activity {
             }
 
             @Override
-            public void onError() {
+            public void onError(String message) {
                 progressDialog.dismiss();
-                errorMessage = Crouton.makeText(ProvideTokenActivity.this, ProvideTokenActivity.this.getString(R
-                        .string.connection_error), Style.ALERT);
+                errorMessage = Crouton.makeText(ProvideTokenActivity.this, String.format("%s: %s",
+                        ProvideTokenActivity.this.getString(R.string.connection_error), message), Style.ALERT);
                 errorMessage.show();
             }
         });

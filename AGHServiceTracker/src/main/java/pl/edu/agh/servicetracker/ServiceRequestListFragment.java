@@ -132,33 +132,34 @@ public class ServiceRequestListFragment extends SwipeRefreshListFragment {
                     }
 
                     @Override
-                    public void onError() {
+                    public void onError(String message) {
                         setRefreshing(false);
-                        errorMessage = Crouton.makeText(getActivity(), getActivity().getString(R.string
-                                .connection_error), Style.ALERT);
+                        errorMessage = Crouton.makeText(getActivity(), String.format("%s: %s",
+                                getActivity().getString(R.string.connection_error), message), Style.ALERT);
                         errorMessage.show();
                     }
                 });
             }
         });
-        final ProgressDialog progressDialog = ProgressDialog.show(getActivity(), "", getString(R.string
-                .loading));
+        final ProgressDialog progressDialog = ProgressDialog.show(getActivity(), "", getString(R.string.loading));
 
         RequestService.getRequestsByUser(getActivity(), new UiCallback<List<ServiceRequest>>() {
 
             @Override
             public void onSuccess(List<ServiceRequest> result) {
                 serviceRequests.clear();
-                serviceRequests.addAll(result);
+                if(result != null) {
+                    serviceRequests.addAll(result);
+                }
                 listAdapter.notifyDataSetChanged();
                 progressDialog.dismiss();
             }
 
             @Override
-            public void onError() {
+            public void onError(String message) {
                 progressDialog.dismiss();
-                errorMessage = Crouton.makeText(getActivity(), getActivity().getString(R
-                        .string.connection_error), Style.ALERT);
+                errorMessage = Crouton.makeText(getActivity(), String.format("%s: %s",
+                        getActivity().getString(R.string.connection_error), message), Style.ALERT);
                 errorMessage.show();
             }
         });

@@ -41,8 +41,8 @@ public class RequestService {
 
     public static void getItemById(Activity activity, Long id, UiCallback<Item> uiCallback) {
 
-        HttpGet httpGet = new HttpGet(URI.create(activity.getString(R.string.baseUri) + activity.getString(R.string
-                .getAsset) + id));
+        HttpGet httpGet = new HttpGet(URI.create(activity.getString(R.string.baseUri) + String.format(activity
+                .getString(R.string.getAsset), id)));
         httpGet.setHeader(AuthService.TOKEN, AuthPreferencesUtil.getToken(activity));
 
         new HttpRequestTask<Item>(uiCallback) {
@@ -79,11 +79,9 @@ public class RequestService {
                 for (int i = 0; i < jsonArray.length(); ++i) {
                     ServiceRequest serviceRequest = new ServiceRequest();
                     JSONObject jsonObject = jsonArray.getJSONObject(i);
-                    serviceRequest.setId(jsonObject.getLong("id"));
                     {
                         Item item = new Item();
                         JSONObject asset = jsonObject.getJSONObject("asset");
-                        item.setId(asset.getLong("id"));
                         item.setName(asset.getString("name"));
                         item.setCategory(asset.getString("category"));
                         item.setLocation(asset.getString("location"));
@@ -106,7 +104,7 @@ public class RequestService {
         HttpPost httpPost = new HttpPost(URI.create(activity.getString(R.string.baseUri) + activity.getString(R
                 .string.postIssue)));
         httpPost.setHeader(AuthService.TOKEN, AuthPreferencesUtil.getToken(activity));
-
+        httpPost.setHeader(HttpRequestTask.CONTENT_TYPE, HttpRequestTask.APPLICATION_JSON);
         try {
             JSONObject jsonObject = new JSONObject();
             JSONObject asset = new JSONObject();
@@ -123,7 +121,7 @@ public class RequestService {
             new HttpRequestTask<>(uiCallback).execute(httpPost);
 
         } catch (JSONException | UnsupportedEncodingException e) {
-            uiCallback.onError();
+            uiCallback.onError(e.getMessage());
         }
 
     }

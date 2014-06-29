@@ -21,5 +21,5 @@ public abstract class UiCallback<T> {
 
     public abstract void onSuccess(T result);
 
-    public abstract void onError();
+    public abstract void onError(String message);
 }

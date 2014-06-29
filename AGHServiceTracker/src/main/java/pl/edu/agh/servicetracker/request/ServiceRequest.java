@@ -17,6 +17,7 @@
 
 package pl.edu.agh.servicetracker.request;
 
+import java.text.DateFormat;
 import java.util.Date;
 
 public class ServiceRequest {
@@ -90,5 +91,5 @@ public class ServiceRequest {
     }
 
     @Override
-    public String toString() { return "#"+id; }
+    public String toString() { return DateFormat.getInstance().format(dateCreated) + " - " + item.getName(); }
 }

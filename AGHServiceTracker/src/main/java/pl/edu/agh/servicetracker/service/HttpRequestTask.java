@@ -32,7 +32,7 @@ public class HttpRequestTask<T> extends AsyncTask<HttpUriRequest, Void, HttpRequ
 
     public static final String CONTENT_TYPE = "Content-Type";
 
-    public static final String APPLICATION_JSON = "application/json";
+    public static final String APPLICATION_JSON = "application/json; charset=utf-8";
 
     private UiCallback<T> uiCallback;
 
@@ -42,57 +42,58 @@ public class HttpRequestTask<T> extends AsyncTask<HttpUriRequest, Void, HttpRequ
 
     public T buildResult(String jsonString) throws JSONException {
         return null;
-    };
+    }
+
+    ;
 
     @Override
     protected final ResultWrapper<T> doInBackground(HttpUriRequest... httpUriRequests) {
         HttpUriRequest httpUriRequest = httpUriRequests[0];
-        httpUriRequest.setHeader(CONTENT_TYPE, APPLICATION_JSON);
+        HttpStatus httpStatus = null;
         try {
             HttpClient httpClient = new DefaultHttpClient();
             HttpResponse httpResponse = httpClient.execute(httpUriRequest);
-            if (HttpStatus.fromStatusCode(httpResponse.getStatusLine().getStatusCode()).getFamily() == HttpStatus
-                    .Family.SUCCESSFUL) {
-                if(httpResponse.containsHeader(CONTENT_TYPE) && APPLICATION_JSON.equals(httpResponse.getFirstHeader
-                        (CONTENT_TYPE).getValue())) {
-                    return new ResultWrapper(true, buildResult(EntityUtils.toString(httpResponse.getEntity())));
-                } else {
-                    return new ResultWrapper(true, null);
-                }
+            httpStatus = HttpStatus.fromStatusCode(httpResponse.getStatusLine().getStatusCode());
+            if (httpResponse.containsHeader(CONTENT_TYPE) && APPLICATION_JSON.equals(httpResponse.getFirstHeader
+                    (CONTENT_TYPE).getValue())) {
+                return new ResultWrapper(httpStatus, buildResult(EntityUtils.toString(httpResponse.getEntity())));
             }
         } catch (IOException | JSONException e) {
             Log.d("HttpRequestTask", e.getMessage(), e);
         }
-        return new ResultWrapper(false, null);
+        return new ResultWrapper(httpStatus, null);
     }
 
     @Override
     protected final void onPostExecute(ResultWrapper<T> resultWrapper) {
-        if (resultWrapper.isSuccess()) {
-            uiCallback.onSuccess(resultWrapper.getResult());
+
+        HttpStatus status = resultWrapper.getStatus();
+        if (status != null) {
+            if (status.getFamily() == HttpStatus.Family.SUCCESSFUL) {
+                uiCallback.onSuccess(resultWrapper.getResult());
+            } else {
+                uiCallback.onError(String.format("%d - %s", status.getStatusCode(), status.getReasonPhrase()));
+            }
         } else {
-            uiCallback.onError();
+            uiCallback.onError("Unknown error");
         }
     }
 
     static class ResultWrapper<T> {
 
-        private boolean success;
+        private HttpStatus status;
 
         private T result;
 
-        public ResultWrapper(boolean success, T result) {
-            this.success = success;
+        public ResultWrapper(HttpStatus status, T result) {
+            this.status = status;
             this.result = result;
         }
 
-        public boolean isSuccess() {
-            return success;
-        }
+        public HttpStatus getStatus() { return status; }
 
-        public T getResult() {
-            return result;
-        }
+        public T getResult() { return result; }
+
     }
 
 }

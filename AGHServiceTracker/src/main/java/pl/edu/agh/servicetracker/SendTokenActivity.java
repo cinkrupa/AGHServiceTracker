@@ -114,10 +114,10 @@ public class SendTokenActivity extends Activity {
                 }
 
                 @Override
-                public void onError() {
+                public void onError(String message) {
                     progressDialog.dismiss();
-                    errorMessage = Crouton.makeText(SendTokenActivity.this, SendTokenActivity.this.getString(R.string
-                            .connection_error), Style.ALERT);
+                    errorMessage = Crouton.makeText(SendTokenActivity.this, String.format("%s: %s",
+                            SendTokenActivity.this.getString(R.string.connection_error), message), Style.ALERT);
                     errorMessage.show();
                 }
             });

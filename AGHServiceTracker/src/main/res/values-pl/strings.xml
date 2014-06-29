@@ -56,4 +56,6 @@
     <string name="invalid_token">Niepoprawny token</string>
     <string name="invalidate_token">Unieważnij token</string>
     <string name="connection_error">Błąd połączenia</string>
+    <string name="other">Inne</string>
+    <string name="checking_token_validity">Sprawdzanie ważności tokenu...</string>
 </resources>

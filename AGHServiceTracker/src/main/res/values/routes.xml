@@ -18,7 +18,7 @@
 
 <resources>
     <string name="baseUri">http://shielded-lowlands-5568.herokuapp.com</string>
-    <string name="getAsset">/android-api/assets/%1$d</string>
+    <string name="getAsset">/android-api/assets/%d</string>
     <string name="postIssue">/android-api/issues</string>
     <string name="getIssues">/android-api/issues</string>
     <string name="postNewToken">/android-api/users/token/new</string>

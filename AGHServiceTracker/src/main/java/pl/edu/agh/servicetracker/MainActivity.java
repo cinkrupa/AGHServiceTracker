@@ -52,15 +52,15 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         String token = AuthPreferencesUtil.getToken(this);
-        if(token != null) {
+        if (token != null) {
 
-            final ProgressDialog progressDialog = ProgressDialog.show(this, "", getString(R.string
-                    .sending));
+            final ProgressDialog progressDialog = ProgressDialog.show(this, "",
+                    getString(R.string.checking_token_validity));
             AuthService.isTokenValid(this, new UiCallback<Boolean>() {
                 @Override
                 public void onSuccess(Boolean result) {
                     progressDialog.dismiss();
-                    if(result != null && result) {
+                    if (result != null && result) {
                         setContentView(R.layout.activity_main);
                         initFields();
                     } else {
@@ -69,8 +69,11 @@ public class MainActivity extends Activity {
                 }
 
                 @Override
-                public void onError() {
+                public void onError(String message) {
                     progressDialog.dismiss();
+                    errorMessage = Crouton.makeText(MainActivity.this, String.format("%s: %s",
+                            MainActivity.this.getString(R.string.connection_error), message), Style.ALERT);
+                    errorMessage.show();
                 }
             });
         } else {
@@ -103,8 +106,7 @@ public class MainActivity extends Activity {
                 errorMessage = null;
             }
 
-            final ProgressDialog progressDialog = ProgressDialog.show(this, "", getString(R.string
-                    .sending));
+            final ProgressDialog progressDialog = ProgressDialog.show(this, "", getString(R.string.sending));
 
             AuthService.invalidateToken(this, new UiCallback<Void>() {
                 @Override
@@ -115,10 +117,10 @@ public class MainActivity extends Activity {
                 }
 
                 @Override
-                public void onError() {
+                public void onError(String message) {
                     progressDialog.dismiss();
-                    errorMessage = Crouton.makeText(MainActivity.this, MainActivity.this.getString(R
-                            .string.connection_error), Style.ALERT);
+                    errorMessage = Crouton.makeText(MainActivity.this, String.format("%s: %s",
+                            MainActivity.this.getString(R.string.connection_error), message), Style.ALERT);
                     errorMessage.show();
                 }
             });

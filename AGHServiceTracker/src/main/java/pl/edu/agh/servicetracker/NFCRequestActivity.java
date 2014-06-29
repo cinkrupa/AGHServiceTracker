@@ -58,25 +58,25 @@ public class NFCRequestActivity extends Activity {
             }
 
             @Override
-            public void onError() {
-                Crouton.makeText(NFCRequestActivity.this, NFCRequestActivity.this.getString(R.string.connection_error),
-                        Style.ALERT).show();
+            public void onError(String message) {
+                Crouton.makeText(NFCRequestActivity.this, String.format("%s: %s", NFCRequestActivity.this.getString(R
+                        .string.connection_error), message), Style.ALERT).show();
             }
         });
     }
 
     private Long getItemId(Intent intent) {
-        if(intent != null) {
+        if (intent != null) {
             if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(intent.getAction())) {
                 for (Parcelable parcelable : intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES)) {
                     NdefMessage ndefMessage = (NdefMessage) parcelable;
                     for (NdefRecord ndefRecord : ndefMessage.getRecords()) {
                         try {
-                            if(getString(R.string.ndef_mime_type).equals(ndefRecord.toMimeType())) {
+                            if (getString(R.string.ndef_mime_type).equals(ndefRecord.toMimeType())) {
                                 JSONObject jsonObject = new JSONObject(new String(ndefRecord.getPayload(), "UTF-8"));
                                 return jsonObject.getLong(getString(R.string.item_id));
                             }
-                        } catch(UnsupportedEncodingException | JSONException e) {
+                        } catch (UnsupportedEncodingException | JSONException e) {
                             Log.d("NDEF", e.getClass().getSimpleName() + ": " + e.getMessage());
                         }
                     }
@@ -86,7 +86,6 @@ public class NFCRequestActivity extends Activity {
         }
         return null;
     }
-
 
 
 }
