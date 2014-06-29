@@ -20,7 +20,6 @@ package pl.edu.agh.servicetracker;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -29,10 +28,11 @@ import android.view.View;
 import android.widget.Button;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
+import de.keyboardsurfer.android.widget.crouton.Crouton;
+import de.keyboardsurfer.android.widget.crouton.Style;
 import pl.edu.agh.servicetracker.auth.AuthPreferencesUtil;
-import pl.edu.agh.servicetracker.auth.UserCredentials;
-import pl.edu.agh.servicetracker.auth.UserNotInitializedException;
-import pl.edu.agh.servicetracker.request.MockRequestService;
+import pl.edu.agh.servicetracker.service.AuthService;
+import pl.edu.agh.servicetracker.service.UiCallback;
 
 
 public class MainActivity extends Activity {
@@ -45,32 +45,42 @@ public class MainActivity extends Activity {
 
     private Button myRequestsButton;
 
-    private UserCredentials userCredentials;
+    private Crouton errorMessage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        try {
-            userCredentials = AuthPreferencesUtil.getUserCredentials(this);
-            if (MockRequestService.isTokenValid(userCredentials)) {
-                setContentView(R.layout.activity_main);
-                initFields();
-            } else {
-                startActivity(new Intent(MainActivity.this, SendTokenActivity.class));
-            }
+        String token = AuthPreferencesUtil.getToken(this);
+        if(token != null) {
 
-        } catch (UserNotInitializedException e) {
+            final ProgressDialog progressDialog = ProgressDialog.show(this, "", getString(R.string
+                    .sending));
+            AuthService.isTokenValid(this, new UiCallback<Boolean>() {
+                @Override
+                public void onSuccess(Boolean result) {
+                    progressDialog.dismiss();
+                    if(result != null && result) {
+                        setContentView(R.layout.activity_main);
+                        initFields();
+                    } else {
+                        startActivity(new Intent(MainActivity.this, SendTokenActivity.class));
+                    }
+                }
+
+                @Override
+                public void onError() {
+                    progressDialog.dismiss();
+                }
+            });
+        } else {
             if (AuthPreferencesUtil.isTokenSent(this)) {
                 startActivity(new Intent(MainActivity.this, ProvideTokenActivity.class));
             } else {
                 startActivity(new Intent(MainActivity.this, SendTokenActivity.class));
             }
         }
-
-
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -87,22 +97,31 @@ public class MainActivity extends Activity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         if (id == R.id.invalidate_token) {
+
+            if (errorMessage != null) {
+                errorMessage.cancel();
+                errorMessage = null;
+            }
+
             final ProgressDialog progressDialog = ProgressDialog.show(this, "", getString(R.string
-                    .loading));
-            new AsyncTask<Void, Void, Void>() {
+                    .sending));
+
+            AuthService.invalidateToken(this, new UiCallback<Void>() {
                 @Override
-                protected Void doInBackground(Void... params) {
-                    MockRequestService.invalidateToken(userCredentials);
+                public void onSuccess(Void result) {
+                    progressDialog.dismiss();
                     AuthPreferencesUtil.clear(MainActivity.this);
-                    return null;
+                    startActivity(new Intent(MainActivity.this, SendTokenActivity.class));
                 }
 
                 @Override
-                protected void onPostExecute(Void result) {
+                public void onError() {
                     progressDialog.dismiss();
-                    startActivity(new Intent(MainActivity.this, SendTokenActivity.class));
+                    errorMessage = Crouton.makeText(MainActivity.this, MainActivity.this.getString(R
+                            .string.connection_error), Style.ALERT);
+                    errorMessage.show();
                 }
-            }.execute();
+            });
             return true;
         }
         return super.onOptionsItemSelected(item);

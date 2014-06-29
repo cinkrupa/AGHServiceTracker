@@ -19,21 +19,19 @@ package pl.edu.agh.servicetracker;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import pl.edu.agh.servicetracker.auth.AuthPreferencesUtil;
-import pl.edu.agh.servicetracker.auth.UserCredentials;
-import pl.edu.agh.servicetracker.auth.UserNotInitializedException;
-import pl.edu.agh.servicetracker.request.InvalidTokenException;
-import pl.edu.agh.servicetracker.request.MockRequestService;
+import de.keyboardsurfer.android.widget.crouton.Crouton;
+import de.keyboardsurfer.android.widget.crouton.Style;
 import pl.edu.agh.servicetracker.request.ServiceRequest;
+import pl.edu.agh.servicetracker.service.RequestService;
+import pl.edu.agh.servicetracker.service.UiCallback;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A list fragment representing a list of ServiceRequests. This fragment
@@ -48,9 +46,9 @@ public class ServiceRequestListFragment extends SwipeRefreshListFragment {
 
     private ArrayAdapter<ServiceRequest> listAdapter;
 
-    private ArrayList serviceRequests = new ArrayList<ServiceRequest>();
+    private ArrayList<ServiceRequest> serviceRequests = new ArrayList<ServiceRequest>();
 
-    private UserCredentials userCredentials;
+    private Crouton errorMessage;
 
     /**
      * The serialization (saved instance state) Bundle key representing the
@@ -78,7 +76,7 @@ public class ServiceRequestListFragment extends SwipeRefreshListFragment {
         /**
          * Callback for when an item has been selected.
          */
-        public void onItemSelected(long id);
+        public void onItemSelected(ServiceRequest serviceRequest);
     }
 
     /**
@@ -87,7 +85,7 @@ public class ServiceRequestListFragment extends SwipeRefreshListFragment {
      */
     private static Callbacks sDummyCallbacks = new Callbacks() {
         @Override
-        public void onItemSelected(long id) {
+        public void onItemSelected(ServiceRequest serviceRequest) {
         }
     };
 
@@ -101,24 +99,9 @@ public class ServiceRequestListFragment extends SwipeRefreshListFragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        try {
-            userCredentials = AuthPreferencesUtil.getUserCredentials(getActivity());
-        } catch (UserNotInitializedException e) {
-            startActivity(new Intent(getActivity(), SendTokenActivity.class));
-        }
         listAdapter = new ArrayAdapter<ServiceRequest>(getActivity(), android.R.layout.simple_list_item_activated_1,
                 android.R.id.text1, serviceRequests);
         setListAdapter(listAdapter);
-    }
-
-    private void reloadData() {
-        listAdapter.clear();
-        try {
-            listAdapter.addAll(MockRequestService.getRequestsByUser(userCredentials));
-        } catch (InvalidTokenException e) {
-            startActivity(new Intent(getActivity(), SendTokenActivity.class));
-        }
-        listAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -133,55 +116,52 @@ public class ServiceRequestListFragment extends SwipeRefreshListFragment {
         setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                new AsyncTask<Void, Void, Boolean>() {
+                if (errorMessage != null) {
+                    errorMessage.cancel();
+                    errorMessage = null;
+                }
+
+                RequestService.getRequestsByUser(getActivity(), new UiCallback<List<ServiceRequest>>() {
+
                     @Override
-                    protected Boolean doInBackground(Void... params) {
+                    public void onSuccess(List<ServiceRequest> result) {
                         serviceRequests.clear();
-                        try {
-                            serviceRequests.addAll(MockRequestService.getRequestsByUser(userCredentials));
-                        } catch (InvalidTokenException e) {
-                            return false;
-                        }
-                        return true;
+                        serviceRequests.addAll(result);
+                        listAdapter.notifyDataSetChanged();
+                        setRefreshing(false);
                     }
 
                     @Override
-                    protected void onPostExecute(Boolean success) {
-                        if(success) {
-                            listAdapter.notifyDataSetChanged();
-                            setRefreshing(false);
-                        } else {
-                            startActivity(new Intent(getActivity(), SendTokenActivity.class));
-                        }
+                    public void onError() {
+                        setRefreshing(false);
+                        errorMessage = Crouton.makeText(getActivity(), getActivity().getString(R.string
+                                .connection_error), Style.ALERT);
+                        errorMessage.show();
                     }
-                }.execute();
+                });
             }
         });
         final ProgressDialog progressDialog = ProgressDialog.show(getActivity(), "", getString(R.string
                 .loading));
-        new AsyncTask<Void, Void, Boolean>() {
+
+        RequestService.getRequestsByUser(getActivity(), new UiCallback<List<ServiceRequest>>() {
+
             @Override
-            protected Boolean doInBackground(Void... params) {
+            public void onSuccess(List<ServiceRequest> result) {
                 serviceRequests.clear();
-                try {
-                    serviceRequests.addAll(MockRequestService.getRequestsByUser(userCredentials));
-                } catch (InvalidTokenException e) {
-                    return false;
-                }
-                return true;
+                serviceRequests.addAll(result);
+                listAdapter.notifyDataSetChanged();
+                progressDialog.dismiss();
             }
 
             @Override
-            protected void onPostExecute(Boolean success) {
+            public void onError() {
                 progressDialog.dismiss();
-                if(success) {
-                    listAdapter.notifyDataSetChanged();
-                    setRefreshing(false);
-                } else {
-                    startActivity(new Intent(getActivity(), SendTokenActivity.class));
-                }
+                errorMessage = Crouton.makeText(getActivity(), getActivity().getString(R
+                        .string.connection_error), Style.ALERT);
+                errorMessage.show();
             }
-        }.execute();
+        });
     }
 
     @Override
@@ -210,7 +190,7 @@ public class ServiceRequestListFragment extends SwipeRefreshListFragment {
 
         // Notify the active callbacks interface (the activity, if the
         // fragment is attached to one) that an item has been selected.
-        mCallbacks.onItemSelected(listAdapter.getItem(position).getId());
+        mCallbacks.onItemSelected(listAdapter.getItem(position));
     }
 
     @Override

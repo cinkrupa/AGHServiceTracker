@@ -23,7 +23,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import pl.edu.agh.servicetracker.request.MockRequestService;
+import com.google.gson.Gson;
 import pl.edu.agh.servicetracker.request.RequestStatus;
 import pl.edu.agh.servicetracker.request.ServiceRequest;
 
@@ -40,7 +40,7 @@ public class ServiceRequestDetailFragment extends Fragment {
      * The fragment argument representing the item ID that this fragment
      * represents.
      */
-    public static final String ARG_ITEM_ID = "item_id";
+    public static final String ARG_ITEM = "item";
 
     private ServiceRequest serviceRequest;
 
@@ -64,15 +64,9 @@ public class ServiceRequestDetailFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (getArguments().containsKey(ARG_ITEM_ID)) {
-
-            // Load the dummy content specified by the fragment
-            // arguments. In a real-world scenario, use a Loader
-            // to load content from a content provider.
-            long itemId = getArguments().getLong(ARG_ITEM_ID);
-            if (itemId != -1L) {
-                serviceRequest = MockRequestService.getRequestById(itemId);
-            }
+        if (getArguments().containsKey(ARG_ITEM)) {
+            String jsonString = getArguments().getString(ARG_ITEM);
+            serviceRequest =  new Gson().fromJson(jsonString, ServiceRequest.class);
         }
     }
 

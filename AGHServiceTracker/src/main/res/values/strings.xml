@@ -56,4 +56,5 @@
     <string name="change_email">Change email</string>
     <string name="invalid_token">Invalid token</string>
     <string name="invalidate_token">Invalidate token</string>
+    <string name="connection_error">Connection error</string>
 </resources>

@@ -20,10 +20,11 @@ package pl.edu.agh.servicetracker;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.EditText;
+import de.keyboardsurfer.android.widget.crouton.Crouton;
+import de.keyboardsurfer.android.widget.crouton.Style;
 import pl.edu.agh.servicetracker.request.Item;
-import pl.edu.agh.servicetracker.request.MockRequestService;
-import pl.edu.agh.servicetracker.validation.FormUtils;
+import pl.edu.agh.servicetracker.service.RequestService;
+import pl.edu.agh.servicetracker.service.UiCallback;
 
 public class NewRequestActivity extends Activity {
 
@@ -40,8 +41,19 @@ public class NewRequestActivity extends Activity {
     private void processIntent(Intent intent) {
         long itemId = intent.getLongExtra(MainActivity.ITEM_ID, -1);
         if(itemId != -1) {
-            Item item = MockRequestService.getItemById(itemId);
-            newRequestFragment.setFieldValues(item);
+            RequestService.getItemById(this, itemId, new UiCallback<Item>() {
+
+                @Override
+                public void onSuccess(Item result) {
+                    newRequestFragment.setFieldValues(result);
+                }
+
+                @Override
+                public void onError() {
+                    Crouton.makeText(NewRequestActivity.this, NewRequestActivity.this.getString(R.string
+                            .connection_error), Style.ALERT).show();
+                }
+            });
         }
     }
 }

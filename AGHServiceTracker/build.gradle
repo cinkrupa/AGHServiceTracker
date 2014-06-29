@@ -87,4 +87,5 @@ dependencies {
     compile 'com.android.support:support-v4:19.+'
     compile 'com.google.zxing:android-integration:3.1.0'
     compile 'de.keyboardsurfer.android.widget:crouton:1.8.4'
+    compile 'com.google.code.gson:gson:1.7.2'
 }

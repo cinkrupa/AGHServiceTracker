@@ -15,24 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package pl.edu.agh.servicetracker.auth;
+package pl.edu.agh.servicetracker.service;
 
-public class UserCredentials {
-    
-    private String email;
+public abstract class UiCallback<T> {
 
-    private String token;
+    public abstract void onSuccess(T result);
 
-    public UserCredentials(String email, String token) {
-        this.email = email;
-        this.token = token;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getToken() {
-        return token;
-    }
+    public abstract void onError();
 }

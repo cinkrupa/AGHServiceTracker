@@ -20,19 +20,20 @@ package pl.edu.agh.servicetracker;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import de.keyboardsurfer.android.widget.crouton.Crouton;
+import de.keyboardsurfer.android.widget.crouton.Style;
 import pl.edu.agh.servicetracker.auth.AuthPreferencesUtil;
-import pl.edu.agh.servicetracker.request.MockRequestService;
+import pl.edu.agh.servicetracker.service.AuthService;
+import pl.edu.agh.servicetracker.service.UiCallback;
 import pl.edu.agh.servicetracker.validation.Form;
 import pl.edu.agh.servicetracker.validation.validator.AghEmailValidator;
 import pl.edu.agh.servicetracker.validation.validator.EmailValidator;
-import pl.edu.agh.servicetracker.validation.validator.NonEmptyValidator;
 
 
 public class SendTokenActivity extends Activity {
@@ -42,6 +43,8 @@ public class SendTokenActivity extends Activity {
     private Button sendTokenButton;
 
     private Form form;
+
+    private Crouton errorMessage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -93,23 +96,31 @@ public class SendTokenActivity extends Activity {
     }
 
     private void validateAndSubmit() {
+        if (errorMessage != null) {
+            errorMessage.cancel();
+            errorMessage = null;
+        }
         if (form.isValid()) {
             final ProgressDialog progressDialog = ProgressDialog.show(this, "", getString(R.string.sending));
             final String emailValue = email.getText().toString();
-            new AsyncTask<Void, Void, Void>() {
+
+            AuthService.generateToken(this, emailValue, new UiCallback<Void>() {
+
                 @Override
-                protected Void doInBackground(Void... params) {
-                    MockRequestService.sendTokenRequest(emailValue);
+                public void onSuccess(Void result) {
+                    progressDialog.dismiss();
                     AuthPreferencesUtil.onTokenSent(SendTokenActivity.this, emailValue);
-                    return null;
+                    startActivity(new Intent(SendTokenActivity.this, ProvideTokenActivity.class));
                 }
 
                 @Override
-                protected void onPostExecute(Void result) {
+                public void onError() {
                     progressDialog.dismiss();
-                    startActivity(new Intent(SendTokenActivity.this, ProvideTokenActivity.class));
+                    errorMessage = Crouton.makeText(SendTokenActivity.this, SendTokenActivity.this.getString(R.string
+                            .connection_error), Style.ALERT);
+                    errorMessage.show();
                 }
-            }.execute();
+            });
         }
     }
 }

@@ -31,21 +31,16 @@ public class AuthPreferencesUtil {
 
     private static final String TOKEN_SENT = "token_sent";
 
-    public static UserCredentials getUserCredentials(Activity activity) throws UserNotInitializedException {
+    public static String getToken(Activity activity) {
         SharedPreferences preferences = activity.getSharedPreferences(PREFERENCES_FILE_NAME, Context.MODE_PRIVATE);
-        UserCredentials userCredentials = new UserCredentials(preferences.getString(EMAIL, null), preferences.getString(TOKEN,
-                null));
-        if (userCredentials.getEmail() == null || userCredentials.getToken() == null) {
-            throw new UserNotInitializedException();
-        }
-        return userCredentials;
+        return preferences.getString(TOKEN, null);
     }
 
-    public static void saveUserCredentials(Activity activity, UserCredentials userCredentials) {
+    public static void saveToken(Activity activity, String token) {
         SharedPreferences preferences = activity.getSharedPreferences(PREFERENCES_FILE_NAME, Context.MODE_PRIVATE);
         SharedPreferences.Editor preferencesEditor = preferences.edit();
-        preferencesEditor.putString(EMAIL, userCredentials.getEmail());
-        preferencesEditor.putString(TOKEN, userCredentials.getToken());
+        preferencesEditor.putString(TOKEN, token);
+        preferencesEditor.remove(EMAIL);
         preferencesEditor.remove(TOKEN_SENT);
         preferencesEditor.commit();
     }

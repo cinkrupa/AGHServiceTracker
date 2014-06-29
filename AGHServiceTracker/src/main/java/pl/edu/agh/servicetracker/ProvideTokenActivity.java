@@ -20,7 +20,6 @@ package pl.edu.agh.servicetracker;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -28,9 +27,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import de.keyboardsurfer.android.widget.crouton.Crouton;
+import de.keyboardsurfer.android.widget.crouton.Style;
 import pl.edu.agh.servicetracker.auth.AuthPreferencesUtil;
-import pl.edu.agh.servicetracker.auth.UserCredentials;
-import pl.edu.agh.servicetracker.request.MockRequestService;
+import pl.edu.agh.servicetracker.service.AuthService;
+import pl.edu.agh.servicetracker.service.UiCallback;
 import pl.edu.agh.servicetracker.validation.Form;
 import pl.edu.agh.servicetracker.validation.validator.NonEmptyValidator;
 
@@ -47,7 +47,7 @@ public class ProvideTokenActivity extends Activity {
 
     private Form form;
 
-    private Crouton invalidTokenMessage;
+    private Crouton errorMessage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,7 +56,6 @@ public class ProvideTokenActivity extends Activity {
         initFields();
         initListeners();
     }
-
 
 
     private void initFields() {
@@ -90,56 +89,69 @@ public class ProvideTokenActivity extends Activity {
     }
 
     private void validateAndSubmit() {
-        if(invalidTokenMessage != null) {
-            invalidTokenMessage.cancel();
+        if (errorMessage != null) {
+            errorMessage.cancel();
+            errorMessage = null;
         }
         if (form.isValid()) {
             String email = AuthPreferencesUtil.getEmail(this);
-            if(email == null) {
+            if (email == null) {
                 changeEmail();
             }
             final ProgressDialog progressDialog = ProgressDialog.show(this, "", getString(R.string.loading));
-            final UserCredentials userCredentials = new UserCredentials(email, token.getText().toString());
+            final String tokenValue = token.getText().toString();
 
-            new AsyncTask<Void, Void, Boolean>() {
+            AuthService.isTokenValid(this, tokenValue, new UiCallback<Boolean>() {
                 @Override
-                protected Boolean doInBackground(Void... params) {
-                    return MockRequestService.isTokenValid(userCredentials);
-                }
-
-                @Override
-                protected void onPostExecute(Boolean isTokenValid) {
+                public void onSuccess(Boolean result) {
                     progressDialog.dismiss();
-                    if(isTokenValid) {
-                        AuthPreferencesUtil.saveUserCredentials(ProvideTokenActivity.this, userCredentials);
+                    if (result != null && result) {
+                        AuthPreferencesUtil.saveToken(ProvideTokenActivity.this, tokenValue);
                         startActivity(new Intent(ProvideTokenActivity.this, MainActivity.class));
                     } else {
-                        invalidTokenMessage = Form.showErrorMessage(ProvideTokenActivity.this, token, getString(R.string.invalid_token));
+                        errorMessage = Form.showErrorMessage(ProvideTokenActivity.this, token,
+                                getString(R.string.invalid_token));
                     }
                 }
-            }.execute();
+
+                @Override
+                public void onError() {
+                    progressDialog.dismiss();
+                    errorMessage = Crouton.makeText(ProvideTokenActivity.this, ProvideTokenActivity.this.getString(R
+                            .string.connection_error), Style.ALERT);
+                    errorMessage.show();
+                }
+            });
         }
     }
 
     private void resendToken() {
+        if (errorMessage != null) {
+            errorMessage.cancel();
+            errorMessage = null;
+        }
         final String email = AuthPreferencesUtil.getEmail(this);
-        if(email == null) {
+        if (email == null) {
             changeEmail();
         }
         final ProgressDialog progressDialog = ProgressDialog.show(this, "", getString(R.string.sending));
-        new AsyncTask<Void, Void, Void>() {
+
+        AuthService.generateToken(this, email, new UiCallback<Void>() {
+
             @Override
-            protected Void doInBackground(Void... params) {
-                MockRequestService.sendTokenRequest(email);
+            public void onSuccess(Void result) {
+                progressDialog.dismiss();
                 AuthPreferencesUtil.onTokenSent(ProvideTokenActivity.this, email);
-                return null;
             }
 
             @Override
-            protected void onPostExecute(Void result) {
+            public void onError() {
                 progressDialog.dismiss();
+                errorMessage = Crouton.makeText(ProvideTokenActivity.this, ProvideTokenActivity.this.getString(R
+                        .string.connection_error), Style.ALERT);
+                errorMessage.show();
             }
-        }.execute();
+        });
     }
 
     private void changeEmail() {

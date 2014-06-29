@@ -20,6 +20,8 @@ package pl.edu.agh.servicetracker;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import com.google.gson.Gson;
+import pl.edu.agh.servicetracker.request.ServiceRequest;
 
 
 /**
@@ -74,13 +76,13 @@ public class ServiceRequestListActivity extends Activity
      * indicating that the item with the given ID was selected.
      */
     @Override
-    public void onItemSelected(long id) {
+    public void onItemSelected(ServiceRequest serviceRequest) {
         if (mTwoPane) {
             // In two-pane mode, show the detail view in this activity by
             // adding or replacing the detail fragment using a
             // fragment transaction.
             Bundle arguments = new Bundle();
-            arguments.putLong(ServiceRequestDetailFragment.ARG_ITEM_ID, id);
+            arguments.putString(ServiceRequestDetailFragment.ARG_ITEM, new Gson().toJson(serviceRequest));
             ServiceRequestDetailFragment fragment = new ServiceRequestDetailFragment();
             fragment.setArguments(arguments);
             getFragmentManager().beginTransaction()
@@ -91,7 +93,7 @@ public class ServiceRequestListActivity extends Activity
             // In single-pane mode, simply start the detail activity
             // for the selected item ID.
             Intent detailIntent = new Intent(this, ServiceRequestDetailActivity.class);
-            detailIntent.putExtra(ServiceRequestDetailFragment.ARG_ITEM_ID, id);
+            detailIntent.putExtra(ServiceRequestDetailFragment.ARG_ITEM, new Gson().toJson(serviceRequest));
             startActivity(detailIntent);
         }
     }

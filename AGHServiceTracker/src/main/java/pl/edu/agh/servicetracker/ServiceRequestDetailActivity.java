@@ -55,8 +55,8 @@ public class ServiceRequestDetailActivity extends Activity {
             // Create the detail fragment and add it to the activity
             // using a fragment transaction.
             Bundle arguments = new Bundle();
-            arguments.putLong(ServiceRequestDetailFragment.ARG_ITEM_ID,
-                    getIntent().getLongExtra(ServiceRequestDetailFragment.ARG_ITEM_ID, -1L));
+            arguments.putString(ServiceRequestDetailFragment.ARG_ITEM,
+                    getIntent().getStringExtra(ServiceRequestDetailFragment.ARG_ITEM));
             ServiceRequestDetailFragment fragment = new ServiceRequestDetailFragment();
             fragment.setArguments(arguments);
             getFragmentManager().beginTransaction()

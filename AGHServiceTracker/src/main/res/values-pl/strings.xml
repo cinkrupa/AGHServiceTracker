@@ -55,4 +55,5 @@
     <string name="change_email">Zmień adres email</string>
     <string name="invalid_token">Niepoprawny token</string>
     <string name="invalidate_token">Unieważnij token</string>
+    <string name="connection_error">Błąd połączenia</string>
 </resources>

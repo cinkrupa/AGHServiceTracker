@@ -20,19 +20,18 @@ package pl.edu.agh.servicetracker;
 import android.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import de.keyboardsurfer.android.widget.crouton.Crouton;
+import de.keyboardsurfer.android.widget.crouton.Style;
 import pl.edu.agh.servicetracker.auth.AuthPreferencesUtil;
-import pl.edu.agh.servicetracker.auth.UserCredentials;
-import pl.edu.agh.servicetracker.auth.UserNotInitializedException;
-import pl.edu.agh.servicetracker.request.InvalidTokenException;
 import pl.edu.agh.servicetracker.request.Item;
-import pl.edu.agh.servicetracker.request.MockRequestService;
+import pl.edu.agh.servicetracker.service.RequestService;
+import pl.edu.agh.servicetracker.service.UiCallback;
 import pl.edu.agh.servicetracker.validation.Form;
 import pl.edu.agh.servicetracker.validation.FormUtils;
 import pl.edu.agh.servicetracker.validation.validator.MinimumLengthValidator;
@@ -52,8 +51,6 @@ public class NewRequestFragment extends Fragment {
 
     private Form form;
 
-    private UserCredentials userCredentials;
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreateView(inflater, container, savedInstanceState);
@@ -68,9 +65,9 @@ public class NewRequestFragment extends Fragment {
 
         initValidationForm();
 
-        try {
-            userCredentials = AuthPreferencesUtil.getUserCredentials(getActivity());
-        } catch (UserNotInitializedException e) {
+        String token = AuthPreferencesUtil.getToken(getActivity());
+
+        if (token == null) {
             startActivity(new Intent(getActivity(), SendTokenActivity.class));
         }
 
@@ -105,28 +102,21 @@ public class NewRequestFragment extends Fragment {
         if (form.isValid()) {
             final ProgressDialog progressDialog = ProgressDialog.show(getActivity(), "", getString(R.string.sending));
 
-            new AsyncTask<Void, Void, Boolean>() {
+            RequestService.sendRequest(getActivity(), buildItem(), description.getText().toString(),
+                    new UiCallback<Void>() {
                 @Override
-                protected Boolean doInBackground(Void... params) {
-                    try {
-                        MockRequestService.sendRequest(userCredentials, buildItem(),
-                                description.getText().toString());
-                    } catch (InvalidTokenException e) {
-                        return false;
-                    }
-                    return true;
+                public void onSuccess(Void result) {
+                    progressDialog.dismiss();
+                    startActivity(new Intent(getActivity(), MainActivity.class));
                 }
 
                 @Override
-                protected void onPostExecute(Boolean success) {
+                public void onError() {
                     progressDialog.dismiss();
-                    if(success) {
-                        startActivity(new Intent(getActivity(), MainActivity.class));
-                    } else {
-                        startActivity(new Intent(getActivity(), SendTokenActivity.class));
-                    }
+                    Crouton.makeText(getActivity(), getActivity().getString(R.string.connection_error),
+                            Style.ALERT).show();
                 }
-            }.execute();
+            });
         }
     }
 
@@ -147,6 +137,10 @@ public class NewRequestFragment extends Fragment {
     }
 
     private Item buildItem() {
-        return new Item(null, name.getText().toString(), category.getText().toString(), location.getText().toString());
+        Item item = new Item();
+        item.setName(name.getText().toString());
+        item.setCategory(category.getText().toString());
+        item.setLocation(location.getText().toString());
+        return item;
     }
 }
